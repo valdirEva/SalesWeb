@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SalesWebMvc.Data;
 using SalesWebMvc.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalesWebMvc.Services
 {
@@ -33,7 +34,8 @@ namespace SalesWebMvc.Services
         //busca um seller pelo ID.
         public Seller FindById(int id)
         {
-            return _context.Seller.FirstOrDefault(obj => obj.Id == id);
+            //Include(obj => obj.Department) pra fazer un join na tabela departament e trazer o departamento do vendedor, incluir using Microsoft.EntityFrameworkCore;
+            return _context.Seller.Include(obj => obj.Department).FirstOrDefault(obj => obj.Id == id);
         }
 
         //remove um sellel.
