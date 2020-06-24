@@ -32,6 +32,7 @@ namespace SalesWebMvc.Controllers
         //ação para chamar pagina onde criar novo vendedor.Chama view Create
         public IActionResult Create()
         {
+            
             var departments = _departmentService.FindAll();// busca todos departamentos cadastrados no BD,
             var viewModel = new SellerFormViewModel { Departments = departments };
             return View(viewModel);
@@ -42,6 +43,14 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]//anotsção de segurança
         public IActionResult Create(Seller seller)
         {
+            if (!ModelState.IsValid)// função para verificar validação caso JS esteja desabilitado no navegador.
+            {
+                var departments = _departmentService.FindAll();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+
+
             _sellerService.Insert(seller);
 
             // redireciona para pagina index de seller após realizar a operação 
@@ -110,6 +119,14 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]//anotsção de segurança
         public IActionResult Edit(int id, Seller seller)
         {
+            if (!ModelState.IsValid)// função para verificar validação caso JS esteja desabilitado no navegador.
+            {
+                var departments = _departmentService.FindAll();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+
+
             if (id != seller.Id)
             {
                 return RedirectToAction(nameof(Error), new { message = "ID mismatch" });
