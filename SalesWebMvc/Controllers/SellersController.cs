@@ -23,13 +23,22 @@ namespace SalesWebMvc.Controllers
             _departmentService = departmentService;
         }
 
+        /*realiza a chamada de busca no serviço. sincrona
         public IActionResult Index()
         {
             var list = _sellerService.FindAll();
             return View(list);
         }
+        */
 
-        //ação para chamar pagina onde criar novo vendedor.Chama view Create
+        //realiza a chamada de busca no serviço. assincrona
+        public async Task<IActionResult>Index()
+        {
+            var list = await _sellerService.FindAllAsync();
+            return View(list);
+        }
+
+        /*ação para chamar pagina onde criar novo vendedor.Chama view Create. operação sincrona
         public IActionResult Create()
         {
             
@@ -37,8 +46,18 @@ namespace SalesWebMvc.Controllers
             var viewModel = new SellerFormViewModel { Departments = departments };
             return View(viewModel);
         }
+        */
+        public async Task<IActionResult> Create()
+        {
+            var departments = await _departmentService.FindAllAsync();
+            var viewModel = new SellerFormViewModel { Departments = departments };
+            return View(viewModel);
+        }
 
-        //ação create, chama operação da classe de servico.
+        //realiza a chamada de busca no serviço. assincrona
+
+
+        /*ação create, chama operação da classe de servico. operação sincrona
         [HttpPost]//anotação para indicar que a ação é de post
         [ValidateAntiForgeryToken]//anotsção de segurança
         public IActionResult Create(Seller seller)
@@ -56,8 +75,28 @@ namespace SalesWebMvc.Controllers
             // redireciona para pagina index de seller após realizar a operação 
             return RedirectToAction(nameof(Index));
         }
+        */
 
-        //metodo para criar tela de confirmação de delete
+        //ação create, chama operação da classe de servico. operação assincrona
+        [HttpPost]//anotação para indicar que a ação é de post
+        [ValidateAntiForgeryToken]//anotsção de segurança
+        public async Task<IActionResult> Create(Seller seller)
+        {
+            if (!ModelState.IsValid)// função para verificar validação caso JS esteja desabilitado no navegador.
+            {
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+
+
+            await _sellerService.InsertAsync(seller);
+
+            // redireciona para pagina index de seller após realizar a operação 
+            return RedirectToAction(nameof(Index));
+        }
+
+        /*metodo para criar tela de confirmação de delete. operação sincrona
         public IActionResult Delete(int? id)
         {
             if (id == null)
@@ -71,8 +110,24 @@ namespace SalesWebMvc.Controllers
             }
             return View(obj);
         }
+        */
 
-        //metodo que chama a função delete do service.
+        //metodo para criar tela de confirmação de delete. operação assincrona
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not provided" });
+            }
+            var obj = await _sellerService.FindByIdAsync(id.Value);
+            if (obj == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not found" });
+            }
+            return View(obj);
+        }
+
+        /*metodo que chama a função delete do service.operação sincrona
         [HttpPost]//anotação para indicar que a ação é de post
         [ValidateAntiForgeryToken]//anotsção de segurança
         public IActionResult Delete(int id)
@@ -82,8 +137,20 @@ namespace SalesWebMvc.Controllers
             // redireciona para pagina index de seller após realizar a operação 
             return RedirectToAction(nameof(Index));
         }
+        */
 
-        // detalhe de seller
+        //metodo que chama a função delete do service.operação assincrona
+        [HttpPost]//anotação para indicar que a ação é de post
+        [ValidateAntiForgeryToken]//anotsção de segurança
+        public async Task<IActionResult> Delete(int id)
+        {
+           await _sellerService.RemoveAsync(id);
+
+            // redireciona para pagina index de seller após realizar a operação 
+            return RedirectToAction(nameof(Index));
+        }
+
+        /* detalhe de seller. operação sincrona
         public IActionResult Details(int? id)
         {
             if (id == null)
@@ -97,7 +164,24 @@ namespace SalesWebMvc.Controllers
             }
             return View(obj);
         }
-        //Ação Edit 
+        */
+
+        // detalhe de seller. operação assincrona
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not provided" });
+            }
+            var obj = await _sellerService.FindByIdAsync(id.Value);
+            if (obj == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not found" });
+            }
+            return View(obj);
+        }
+
+        /*Ação Edit . operação sincrona
         public IActionResult Edit(int? id)
         {
             if (id == null)
@@ -114,7 +198,28 @@ namespace SalesWebMvc.Controllers
             return View(viewModel);
 
         }
+        */
 
+
+        //Ação Edit . operação assincrona
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not provided" });
+            }
+            var obj = await _sellerService.FindByIdAsync(id.Value);
+            if (obj == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID not found" });
+            }
+            List<Department> departments = await _departmentService.FindAllAsync();
+            SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
+            return View(viewModel);
+
+        }
+
+        /* editar no metodo post para realizar operação sincrona
         [HttpPost]//anotação para indicar que a ação é de post
         [ValidateAntiForgeryToken]//anotsção de segurança
         public IActionResult Edit(int id, Seller seller)
@@ -143,6 +248,39 @@ namespace SalesWebMvc.Controllers
             catch (DbConcurrencyException e )
             {
                 return RedirectToAction(nameof(Error), new { message = e.Message});
+            }
+        }
+        */
+
+        // editar no metodo post para realizar operação assincrona
+        [HttpPost]//anotação para indicar que a ação é de post
+        [ValidateAntiForgeryToken]//anotsção de segurança
+        public async Task<IActionResult> Edit(int id, Seller seller)
+        {
+            if (!ModelState.IsValid)// função para verificar validação caso JS esteja desabilitado no navegador.
+            {
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
+            }
+
+
+            if (id != seller.Id)
+            {
+                return RedirectToAction(nameof(Error), new { message = "ID mismatch" });
+            }
+            try
+            {
+                await _sellerService.UpdateAsync(seller);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
+            catch (DbConcurrencyException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
             }
         }
 
